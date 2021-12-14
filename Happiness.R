@@ -4,6 +4,8 @@
 #Loading libraries
 library(stargazer)
 library(tidyverse)
+library(corrplot)
+library(AER)
 
 #Loading data
 happiness = read.csv("world-happiness-report-2021.csv")
@@ -26,12 +28,18 @@ happiness = select(happiness, -c(4:6, 13:20))
 
 attach(happiness)
 
-#Adding additional column: poor vs rich
-summary(happiness)
-
+#Summary
+str(happiness)
 
 #2) Visual inspection ----------------------------------------------------------
 #-------------------------------------------------------------------------------
+#Correlation plot
+# Create a correlation plot
+cols = sapply(happiness, is.numeric)
+correlations = cor(happiness[, cols])
+corrplot(correlations, method = "number")
+
+
 #Scatterplots
 #Setting up arrangement of plots
 par(mfrow=c(3,2))
@@ -72,9 +80,26 @@ plot(corruption, score,
      col = "steelblue",
      main = "Corruption vs Happiness")
 
+#3) Regressions ----------------------------------------------------------------
+#-------------------------------------------------------------------------------
+#Most basic regression: GDP vs happiness
+mod1 = lm(score ~ gdp, data = happiness)
+summary(mod1)
+coeftest(mod1, vcov. = vcovHC, type = "HC1")
 
 
+#Model with all the variables
+fullMod = lm(score ~ gdp + social + health + freedom + generosity + corruption, data = happiness)
 
+summary(fullMod)
+
+
+# Table with all the regressions
+# stargazer(fullMod,
+#           type="html",
+#           digits = 3,
+#           header = F,
+#           out = "fullMod.html")
 
 
 
