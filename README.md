@@ -1,1 +1,1 @@
-# Econometrics-Project
+Econometrics project: relation between GDP and happiness
