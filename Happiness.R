@@ -32,18 +32,51 @@ summary(happiness)
 
 #2) Visual inspection ----------------------------------------------------------
 #-------------------------------------------------------------------------------
+#Scatterplots
+#Setting up arrangement of plots
+par(mfrow=c(3,2))
 
-#First Model
-model1 = lm(score ~ gdp)
-summary(model1)
-
-#plotting GDP vs happiness
+#plotting GDP vs Happiness
 plot(gdp, score,
      pch = 20,
      col = "steelblue",
      main = "GDP vs Happiness")
 
-abline(model1, col = "red")
+#plotting Social Support vs Happiness
+plot(social, score,
+     pch = 20,
+     col = "steelblue",
+     main = "Social Support vs Happiness")
+
+#plotting Life Expectancy vs happiness
+plot(health, score,
+     pch = 20,
+     col = "steelblue",
+     main = "Life Expectancy vs Happiness")
+
+#plotting Freedom vs happiness
+plot(freedom, score,
+     pch = 20,
+     col = "steelblue",
+     main = "Freedom vs Happiness")
+
+#plotting Generosity vs happiness
+plot(generosity, score,
+     pch = 20,
+     col = "steelblue",
+     main = "Generosity vs Happiness")
+
+#plotting Corruption vs happiness
+plot(corruption, score,
+     pch = 20,
+     col = "steelblue",
+     main = "Corruption vs Happiness")
+
+
+
+
+
+
 
 
 
