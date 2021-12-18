@@ -20,19 +20,10 @@ gradeTotal = na.omit(gradeTotal)
 #To use the dataset variables without always using happiness$
 attach(gradeTotal)
 
-# #Mom at home
-# gradeTotal$Mjob = ifelse(Mjob == "at_home", 1, 0)
-# 
-# #Dad at home
-# gradeTotal$Fjob = ifelse(Fjob == "at_home", 1 , 0)
-
 #Removing G1 + G2 because they're highly correlated, could be a source of bias, keeping relevant variables
 cor(G3, G1)
 cor(G3, G2)
-gradeTotal = select(gradeTotal, c("sex", "famsize", "Pstatus", "Medu", "Fedu", "Mjob", "Fjob", "guardian", "famsup", "famrel", "higher", "G3"))
-
-# #Parents at home or not
-# gradeTotal$home = ifelse(Mjob == "at_home" | Fjob == "at_home", 1, 0)
+gradeTotal = select(gradeTotal, c("famsize", "Pstatus", "Medu", "Fedu", "Mjob", "Fjob", "guardian", "famsup", "famrel", "G3"))
 
 #Summary
 head(gradeTotal)
@@ -41,47 +32,54 @@ str(gradeTotal)
 
 #2) Visual inspection ----------------------------------------------------------
 #-------------------------------------------------------------------------------
-#Correlation plot
+
 # Create a correlation plot
 cols = sapply(gradeTotal, is.numeric)
 correlations = cor(gradeTotal[, cols])
 corrplot(correlations, method = "number")
 
 #Histogram of grade
-hist(G3, col = "orange")
+ggplot(gradeTotal, aes(x = G3)) +
+  geom_histogram()
 
-#sex
-boxplot(G3 ~ sex)
+#histogram of Medu
+ggplot(gradeTotal, aes(x = Medu)) +
+  geom_histogram()
 
 #famsize
-boxplot(G3 ~ famsize)
+ggplot(gradeTotal, aes(x = factor(famsize), y = G3)) +
+  geom_boxplot()
 
 #Pstatus
-boxplot(G3 ~ Pstatus)
-
+ggplot(gradeTotal, aes(x = factor(Pstatus), y = G3)) +
+  geom_boxplot()
 #Plot mother's education vs final grade
-boxplot(G3 ~ Medu)
+ggplot(gradeTotal, aes(x = factor(Medu), y = G3)) +
+  geom_boxplot()
 
 #Fedu
-boxplot(G3 ~ Fedu)
+ggplot(gradeTotal, aes(x = factor(Fedu), y = G3)) +
+  geom_boxplot()
 
 #Mjob
-boxplot(G3 ~ Mjob)
+ggplot(gradeTotal, aes(x = factor(Mjob), y = G3)) +
+  geom_boxplot()
 
 #Fjob
-boxplot(G3 ~ Fjob)
+ggplot(gradeTotal, aes(x = factor(Fjob), y = G3)) +
+  geom_boxplot()
 
 #guardian
-boxplot(G3 ~ guardian)
-
+ggplot(gradeTotal, aes(x = factor(guardian), y = G3)) +
+  geom_boxplot()
 #Famsup vs G3
-boxplot(G3 ~ famsup)
+ggplot(gradeTotal, aes(x = factor(famsup), y = G3)) +
+  geom_boxplot()
 
 #famrel
-boxplot(G3 ~ famrel)
+ggplot(gradeTotal, aes(x = factor(famrel), y = G3)) +
+  geom_boxplot()
 
-#hgiher
-boxplot(G3 ~ higher)
 
 #3) Regressions ----------------------------------------------------------------
 #-------------------------------------------------------------------------------
@@ -100,7 +98,7 @@ mod3 = lm(G3 ~ Medu + Fedu + famrel + Mjob + Fjob, data = gradeTotal)
 summary(mod3)
 
 #4
-mod4 = lm(G3 ~ Medu + Fedu + famrel + Mjob + Fjob + Pstatus + guardian + famsup + higher + famsize, data = gradeTotal)
+mod4 = lm(G3 ~ Medu + Fedu + famrel + Mjob + Fjob + Pstatus + guardian + famsup + famsize, data = gradeTotal)
 summary(mod4)
 
 #5
@@ -108,20 +106,13 @@ mod5 = lm(G3 ~ Medu + Mjob + Medu * Mjob, data = gradeTotal)
 summary(mod5)
 
 #6
-mod6 = lm(G3 ~ Medu + Fedu + famrel + Mjob + Fjob + Medu * Mjob + Pstatus + guardian + famsup + higher + famsize, data = gradeTotal)
+mod6 = lm(G3 ~ Medu + Fedu + famrel + Mjob + Fjob + Medu * Mjob + Pstatus + guardian + famsup + famsize, data = gradeTotal)
 summary(mod6)
 
 #7
-mod7 = lm(G3 ~ Medu + I(Medu^2) + Fedu + famrel + Mjob + Fjob + Medu * Mjob + Pstatus + guardian + famsup + higher + famsize, data = gradeTotal)
+mod7 = lm(G3 ~ Medu + I(Medu^2) + Fedu + famrel + Mjob + Fjob + Medu * Mjob + Pstatus + guardian + famsup + famsize, data = gradeTotal)
 summary(mod7)
 
-#8
-mod8 = lm(G3 ~ Medu + Mjob + Medu * higher, data = gradeTotal)
-summary(mod8)
-
-#9
-mod9 = lm(G3 ~ Medu + Fedu + famrel + Mjob + Fjob + Pstatus + guardian + famsup + higher + Medu * higher + famsize, data = gradeTotal)
-summary(mod9)
 
 robSE = list(sqrt(diag(vcovHC(mod1, type = "HC1"))),
              sqrt(diag(vcovHC(mod2, type = "HC1"))),
@@ -129,16 +120,24 @@ robSE = list(sqrt(diag(vcovHC(mod1, type = "HC1"))),
              sqrt(diag(vcovHC(mod4, type = "HC1"))),
              sqrt(diag(vcovHC(mod5, type = "HC1"))),
              sqrt(diag(vcovHC(mod6, type = "HC1"))),
-             sqrt(diag(vcovHC(mod7, type = "HC1"))),
-             sqrt(diag(vcovHC(mod8, type = "HC1"))),
-             sqrt(diag(vcovHC(mod9, type = "HC1"))))
+             sqrt(diag(vcovHC(mod7, type = "HC1"))))
 
-stargazer(mod1, mod2, mod3, mod4, mod5, mod6, mod7, mod8, mod9,
+stargazer(mod1, mod2, mod3, mod4, mod5, mod6, mod7,
           se = robSE,
+
           digits = 3,
           header = F,
-          column.labels = c("(I)", "(II)", "(III)", "(IV)", "(V)", "(VI)", "(VII)", "(VIII)", "(IX)"),
+          column.labels = c("(I)", "(II)", "(III)", "(IV)", "(V)", "(VI)", "(VII)"),
           type = "html",
           out = "Table.html")
 
+#ANOVA
+anova(mod4, mod6)
 
+#4) Plotting results -----------------------------------------------------------
+#-------------------------------------------------------------------------------
+
+ggplot(gradeTotal, aes(x = Medu, y = G3, col = Mjob)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~ Mjob)
